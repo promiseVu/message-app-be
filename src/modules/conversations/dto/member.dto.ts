@@ -4,7 +4,7 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 export class MemberDto {
   @IsNotEmpty()
   @IsString()
-  userId: string;
+  user: string;
 
   @IsOptional()
   @Type(() => Date)

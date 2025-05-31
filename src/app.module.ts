@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { AuthModule } from './modules/auth/auth.module';
+import { WebsocketModule } from './modules/websocket/websocket.module';
 
 @Module({
   imports: [
@@ -25,6 +26,8 @@ import { AuthModule } from './modules/auth/auth.module';
     ConversationsModule,
 
     AuthModule,
+
+    WebsocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],
