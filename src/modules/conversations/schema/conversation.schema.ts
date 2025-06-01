@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
-
+import { Types, Document } from 'mongoose';
+export type ConversationDocument = Conversation & Document;
 @Schema({ timestamps: true })
 export class Conversation {
-  @Prop({ required: true })
+  @Prop()
   name: string;
 
   @Prop({ required: true, default: false })
@@ -13,16 +13,29 @@ export class Conversation {
     type: [
       {
         _id: false,
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
+        user: {
+          type: Types.ObjectId,
           ref: 'User',
           required: true,
         },
         joinedAt: { type: Date, default: Date.now },
       },
     ],
+    required: true,
   })
-  members: { userId: string; joinedAt: Date }[];
+  members: { user: string; joinedAt: Date }[];
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);
+
+ConversationSchema.pre<ConversationDocument>(
+  ['findOne', 'find', 'save'],
+  async function (next) {
+    try {
+      this.populate({ path: 'members.user' });
+      next();
+    } catch (error) {
+      next(error);
+    }
+  },
+);

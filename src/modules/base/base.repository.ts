@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-
 Injectable();
-export class BaseRepository<T extends Document> {
+export class BaseRepository<T> {
   constructor(private readonly model: any) {}
   async findAll(): Promise<T[]> {
     return await this.model.find().exec();
