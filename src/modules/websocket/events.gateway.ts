@@ -5,6 +5,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { AuthService } from '../auth/auth.service';
 
 @WebSocketGateway({
   cors: {
@@ -12,6 +13,7 @@ import { Server } from 'socket.io';
   },
 })
 export class EventsGateway {
+  constructor(private readonly authService: AuthService) {}
   @WebSocketServer()
   server: Server;
 
@@ -20,8 +22,20 @@ export class EventsGateway {
     console.log('Received data:', data);
   }
 
-  handleConnection() {
-    console.log(`Websocket connection`);
+  async handleConnection(socket) {
+    console.log(`Websocket connection`, socket.handshake.auth.token);
+    if (socket.handshake.auth.token) {
+      const user = await this.authService.validateToken(
+        socket.handshake.auth.token,
+      );
+      if (user) {
+        socket.data.user = user; // Lưu thông tin người dùng vào socket
+      } else {
+        socket.disconnect();
+      }
+    } else {
+      socket.disconnect();
+    }
   }
 
   // Xử lý khi client ngắt kết nối

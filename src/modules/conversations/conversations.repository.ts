@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from '../base/base.repository';
-import { Conversation } from './schema/conversation.schema';
-import { Model } from 'mongoose';
+import {
+  Conversation,
+  ConversationDocument,
+} from './schema/conversation.schema';
+import { Model, Document } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class ConversationRepository extends BaseRepository<
-  Conversation & Document
-> {
+export class ConversationRepository extends BaseRepository<ConversationDocument> {
   constructor(
     @InjectModel(Conversation.name)
     private readonly conversationModel: Model<Document>,

@@ -9,6 +9,7 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { AuthModule } from './modules/auth/auth.module';
 import { WebsocketModule } from './modules/websocket/websocket.module';
+import { MessagesModule } from './modules/messages/messages.module';
 
 @Module({
   imports: [
@@ -28,6 +29,8 @@ import { WebsocketModule } from './modules/websocket/websocket.module';
     AuthModule,
 
     WebsocketModule,
+
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

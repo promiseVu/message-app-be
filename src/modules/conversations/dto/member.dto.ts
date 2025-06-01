@@ -8,5 +8,5 @@ export class MemberDto {
 
   @IsOptional()
   @Type(() => Date)
-  joinedAt: Date;
+  joinedAt?: Date;
 }

@@ -11,10 +11,10 @@ import { MemberDto } from './member.dto';
 export class UpdateConversationDto {
   @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
   @IsOptional()
-  isGroup: boolean;
+  isGroup?: boolean;
 
   @IsOptional()
   @IsArray()
