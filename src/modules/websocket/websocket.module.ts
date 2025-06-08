@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { EventsGateway } from './events.gateway';
 import { AuthModule } from '../auth/auth.module';
+import { MessagesModule } from '../messages/messages.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, MessagesModule],
   controllers: [],
   providers: [EventsGateway],
   exports: [],
