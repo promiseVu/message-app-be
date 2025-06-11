@@ -22,6 +22,7 @@ export class UsersService extends BaseService<
     }
     return await this.userRepository.create(data);
   }
+
   async getByEmail(email: string): Promise<User> {
     return this.userRepository.getByEmail(email);
   }

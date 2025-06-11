@@ -10,11 +10,12 @@ import {
 import { Type } from 'class-transformer';
 import { AttachmentDto } from './attachment.dto';
 import { MessageType } from 'src/utils/const';
+import { Types } from 'mongoose';
 
 export class CreateMessageDto {
   @IsMongoId({ message: 'Invalid senderId value' })
   @IsOptional()
-  sender: string;
+  sender: Types.ObjectId;
 
   @IsMongoId({ message: 'Invalid conversationId value' })
   conversation: string;

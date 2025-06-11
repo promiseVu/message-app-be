@@ -14,4 +14,8 @@ export class ConversationsService extends BaseService<
   constructor(private readonly conversationRepository: ConversationRepository) {
     super(conversationRepository);
   }
+
+  async getConversationByUser(userId: string): Promise<Conversation[]> {
+    return await this.conversationRepository.getConversationByUser(userId);
+  }
 }
