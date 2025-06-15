@@ -13,5 +13,6 @@ import { ConversationRepository } from './conversations.repository';
   ],
   controllers: [ConversationsController],
   providers: [ConversationsService, ConversationRepository],
+  exports: [ConversationsService],
 })
 export class ConversationsModule {}

@@ -11,8 +11,16 @@ import { InjectModel } from '@nestjs/mongoose';
 export class ConversationRepository extends BaseRepository<ConversationDocument> {
   constructor(
     @InjectModel(Conversation.name)
-    private readonly conversationModel: Model<Document>,
+    private readonly conversationModel: Model<ConversationDocument>,
   ) {
     super(conversationModel);
+  }
+
+  async getConversationByUser(userId: string): Promise<Conversation[]> {
+    return await this.conversationModel
+      .find({
+        members: { $elemMatch: { user: userId } },
+      })
+      .exec();
   }
 }

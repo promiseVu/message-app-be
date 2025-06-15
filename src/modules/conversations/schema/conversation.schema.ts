@@ -9,6 +9,9 @@ export class Conversation {
   @Prop({ required: true, default: false })
   isGroup: boolean;
 
+  @Prop({ required: false, index: true, type: Types.ObjectId, ref: 'Message' })
+  lastMessage: Types.ObjectId;
+
   @Prop({
     type: [
       {
@@ -32,6 +35,10 @@ ConversationSchema.pre<ConversationDocument>(
   ['findOne', 'find', 'save'],
   async function (next) {
     try {
+      this.populate({
+        path: 'lastMessage',
+        select: 'content type sender attachments',
+      });
       this.populate({ path: 'members.user' });
       next();
     } catch (error) {
