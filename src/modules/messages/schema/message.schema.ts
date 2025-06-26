@@ -62,6 +62,19 @@ export class Message extends Document {
     required: false,
   })
   attachments: { type: AttachmentType; url: string }[];
+
+  @Prop({
+    type: [
+      {
+        _id: false,
+        userId: { type: Types.ObjectId, required: true, ref: 'User' },
+        readAt: { type: Date, default: null },
+      },
+    ],
+    required: false,
+    default: [],
+  })
+  readStatus: { userId: Types.ObjectId; readAt: Date }[];
 }
 
 const MessageSchema = SchemaFactory.createForClass(Message);

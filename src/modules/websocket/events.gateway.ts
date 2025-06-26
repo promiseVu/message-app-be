@@ -10,6 +10,7 @@ import { AuthService } from '../auth/auth.service';
 import { MessagesService } from '../messages/messages.service';
 import { CreateMessageDto } from '../messages/dto/create-message.dto';
 import { Socket } from 'socket.io';
+import { ConversationsService } from '../conversations/conversations.service';
 
 interface WebsocketResponse {
   status: 'success' | 'error';
@@ -22,9 +23,11 @@ interface WebsocketResponse {
 })
 export class EventsGateway {
   private userSocket: Map<string, Set<string>> = new Map();
+  private userStatus: Map<string, string> = new Map();
   constructor(
     private readonly authService: AuthService,
     private readonly messageService: MessagesService,
+    private readonly conversationService: ConversationsService,
   ) {}
   @WebSocketServer()
   server: Server;
@@ -35,13 +38,15 @@ export class EventsGateway {
     @ConnectedSocket() socket: Socket,
   ): Promise<WebsocketResponse> {
     try {
-      socket.join(payload.conversationId);
-      if (!this.userSocket.has(payload.conversationId)) {
-        this.userSocket.set(payload.conversationId, new Set());
-      }
-      this.userSocket.get(payload.conversationId)?.add(socket.id);
+      //get list message
       const listMessages = await this.messageService.getConversationMessages(
         payload.conversationId,
+      );
+
+      // update read status message
+      await this.messageService.updateReadStatus(
+        payload.conversationId,
+        socket.data.user._id,
       );
       return { status: 'success', data: listMessages };
     } catch (e) {
@@ -66,14 +71,31 @@ export class EventsGateway {
       .emit('receivedMessage', { status: 'success', data: message });
   }
 
-  async handleConnection(socket) {
+  @SubscribeMessage('focusInput')
+  async handleFocusInput(
+    @MessageBody() payload: { conversationId: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    // update read status message
+    await this.messageService.updateReadStatus(
+      payload.conversationId,
+      socket.data.user._id,
+    );
+  }
+
+  async handleConnection(socket: Socket) {
     console.log(`Websocket connection`, socket.handshake.auth.token);
     if (socket.handshake.auth.token) {
       const user = await this.authService.validateToken(
         socket.handshake.auth.token,
       );
       if (user) {
-        socket.data.user = user; // Lưu thông tin người dùng vào socket
+        socket.data.user = user;
+        this.userStatus.set(socket.id, user._id);
+        // register conversation event
+        await this.registerConversationEvent(socket, user._id);
+        // broadcast online users
+        this.broadcastOnlineUsers();
       } else {
         socket.disconnect();
       }
@@ -82,8 +104,37 @@ export class EventsGateway {
     }
   }
 
-  // Xử lý khi client ngắt kết nối
-  handleDisconnect() {
+  handleDisconnect(socket: Socket) {
     console.log(`Websocket disconnected`);
+    // remove conversation event
+    this.removeConversationEvent(socket);
+    // remove user online status
+    this.userStatus.delete(socket.id);
+    this.broadcastOnlineUsers();
+  }
+
+  private async registerConversationEvent(socket, userId: string) {
+    const listConversation =
+      await this.conversationService.getConversationByUser(userId);
+    listConversation.forEach((conversation) => {
+      socket.join(conversation._id.toString());
+      if (!this.userSocket.has(conversation._id.toString())) {
+        this.userSocket.set(conversation._id.toString(), new Set());
+      }
+      this.userSocket.get(conversation._id.toString())?.add(socket.id);
+    });
+  }
+
+  private removeConversationEvent(socket: Socket) {
+    this.userSocket.forEach((sockets, conversationId) => {
+      sockets.delete(socket.id);
+      if (sockets.size === 0) {
+        this.userSocket.delete(conversationId);
+      }
+    });
+  }
+
+  private broadcastOnlineUsers() {
+    this.server.emit('onlineUsers', Array.from(this.userStatus.values()));
   }
 }

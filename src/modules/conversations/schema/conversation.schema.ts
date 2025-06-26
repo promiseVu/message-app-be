@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
 export type ConversationDocument = Conversation & Document;
 @Schema({ timestamps: true })
-export class Conversation {
+export class Conversation extends Document {
   @Prop()
   name: string;
 

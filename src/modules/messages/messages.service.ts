@@ -24,6 +24,12 @@ export class MessagesService extends BaseService<
       ...data,
       sender: new Types.ObjectId(data.sender),
       reply: data.reply ? new Types.ObjectId(data.reply) : undefined,
+      readStatus: [
+        {
+          userId: new Types.ObjectId(data.sender),
+          readAt: new Date(),
+        },
+      ],
     });
     if (message) {
       await this.conversationsService.update(data.conversation, {
@@ -35,5 +41,12 @@ export class MessagesService extends BaseService<
 
   async getConversationMessages(conversationId: string): Promise<Message[]> {
     return await this.messageRepository.getConversationMessages(conversationId);
+  }
+
+  async updateReadStatus(conversationId: string, userId: string) {
+    return await this.messageRepository.updateReadStatus(
+      conversationId,
+      userId,
+    );
   }
 }

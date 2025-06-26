@@ -18,4 +18,38 @@ export class MessageRepository extends BaseRepository<MessageDocument> {
       .sort({ order: 1 })
       .exec();
   }
+
+  async getUnreadMessages(
+    conversationId: string,
+    userId: string,
+  ): Promise<number> {
+    return await this.messageModel
+      .countDocuments({
+        conversation: conversationId,
+        'readStatus.userId': { $ne: userId },
+        sender: { $ne: userId },
+      })
+      .exec();
+  }
+
+  async updateReadStatus(conversationId: string, userId: string) {
+    const filter = {
+      conversation: { $eq: conversationId },
+      'readStatus.userId': { $ne: userId },
+    };
+    const update = {
+      $push: {
+        readStatus: {
+          userId: userId,
+          readAt: new Date(),
+        },
+      },
+    };
+
+    const response = await this.messageModel.updateMany(filter, update).exec();
+    return {
+      matchedCount: response.matchedCount,
+      modifiedCount: response.modifiedCount,
+    };
+  }
 }
